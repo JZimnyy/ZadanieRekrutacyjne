@@ -1,0 +1,31 @@
+﻿@model IEnumerable<ZadanieRekrutacyjne.Models.Tree>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+
+
+<h2>Index</h2>
+
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<div class="treeview">
+    <ul>
+        @Html.Action("Treeview", "Tree", new { parentID = 0 })
+    </ul>
+</div>
+    @section Scripts{
+        <script>
+            $(document).ready(function () {
+                $(".treeview li>ul").css('display', 'none'); // Hide all 2-level ul
+                $(".collapsible").click(function (e) {
+                    e.preventDefault();
+                    $(this).toggleClass("collapse expand");
+                    $(this).closest('li').children('ul').slideToggle();
+                });
+            });
+        </script>
+    }

@@ -1,0 +1,28 @@
+﻿@model IEnumerable<ZadanieRekrutacyjne.Models.Tree>
+
+
+@foreach (var item in Model.Where(t=>t.ParentID==ViewBag.parentID))
+{
+    <li>
+        @{
+            var ilosc = Model.Where(a => a.ParentID == item.TreeId).Count();
+        } 
+        @if (ilosc > 0)
+	        {
+		        <span class="collapse collapsible">&nbsp;</span>
+	        }
+            else
+	        {
+                <span style="width:15px; display:inline-block">&nbsp;</span>
+	        }
+            <span>
+                @item.Name
+            </span>
+        @if(ilosc>0)
+        {
+            <ul>
+            @Html.Action("Treeview", "Tree", new {parentID = item.TreeId})
+            </ul>
+        }
+    </li>
+}
