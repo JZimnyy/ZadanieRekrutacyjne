@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31019.35
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZadanieRekrutacyjne", "ZadanieRekrutacyjne\ZadanieRekrutacyjne.csproj", "{437EE0A6-3561-46E2-908A-23D802036DCB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{437EE0A6-3561-46E2-908A-23D802036DCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{437EE0A6-3561-46E2-908A-23D802036DCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{437EE0A6-3561-46E2-908A-23D802036DCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{437EE0A6-3561-46E2-908A-23D802036DCB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A5B6444E-A219-4FBE-B194-97B1DBBB5984}
+	EndGlobalSection
+EndGlobal
