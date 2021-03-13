@@ -6,26 +6,49 @@
 
 
 
-<i class="fas fa-clock"></i><h2>Index</h2>
-
+<h2>Index</h2>
 
 <p>
     @Html.ActionLink("Create New", "Create")
 </p>
+
+
+@using (Ajax.BeginForm(new AjaxOptions
+{
+    Url = Url.Action("Treeview", "Tree"),
+    HttpMethod = "get",
+    InsertionMode = InsertionMode.Replace,
+    UpdateTargetId = "treeview"
+}))
+{
+    <div class="form-group form-inline">
+        
+        <select name="sortType" class="form-control">
+            <option value="" selected>Wybierz sortowanie</option>
+            <option value="1">Sortuj po nazwie A-Z</option>
+            <option value="2">Sortuj po nazwie Z-A</option>
+        </select>
+        <input type="submit" value="Sortuj" class="btn btn-primary" />
+    </div>
+}
+
+
 <div class="treeview">
-    <ul>
-        @Html.Action("Treeview", "Tree", new { parentID = 0 })
+    <ul>      
+            @Html.Action("Treeview", "Tree")    
     </ul>
 </div>
-    @section Scripts{
-        <script>
-            $(document).ready(function () {
-                $(".treeview li>ul").css('display', 'none'); // Hide all 2-level ul
-                $(".collapsible").click(function (e) {
-                    e.preventDefault();
-                    $(this).toggleClass("collapse expand");
-                    $(this).closest('li').children('ul').slideToggle();
-                });
+
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $(".treeview li>ul").css('display', 'none');
+            $(".collapsible").click(function (e) {
+                e.preventDefault();
+                $(this).toggleClass("collapse expand");
+                $(this).closest('li').children('ul').slideToggle();
             });
-        </script>
-    }
+        });
+    </script>
+}

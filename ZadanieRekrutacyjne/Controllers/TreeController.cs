@@ -20,10 +20,30 @@ namespace ZadanieRekrutacyjne.Controllers
             return View(db.Trees.ToList());
         }
 
-        public ActionResult Treeview(int parentID)
+        public ActionResult Treeview(int? parentID, int? sortType, int? sortId)
         {
+            if(parentID == null)
+            {
+                parentID = 0;
+            }
+
             ViewBag.parentID = parentID;
-            return PartialView(db.Trees.ToList());
+            var lista = db.Trees.ToList();
+
+            if (sortType == 1)
+            {
+                var listaAZ = db.Trees.OrderBy(x => x.Name).ToList();
+                return PartialView(listaAZ);
+            }
+            else if (sortType == 2)
+            {
+                var listaZA = db.Trees.OrderByDescending(x => x.Name).ToList();
+                return PartialView(listaZA);
+            }
+            
+            
+
+            return PartialView(lista);
         }
 
         // GET: Tree/Details/5
@@ -44,9 +64,16 @@ namespace ZadanieRekrutacyjne.Controllers
         // GET: Tree/Create
         public ActionResult Create()
         {
-            var node = db.Trees;
+            //var node = db.Trees;
 
-            ViewBag.Nodes = node;
+
+            var node = db.Trees.Select(x => new SelectListItem
+            {
+                Value = x.TreeId.ToString(),
+                Text = x.Name
+            });
+
+            ViewBag.ParentID = new SelectList(node,"Value","Text");
 
             return View();
         }
@@ -58,14 +85,49 @@ namespace ZadanieRekrutacyjne.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "TreeId,Name,ParentID")] Tree tree)
         {
+
+            int x = db.Trees.Where(n => n.TreeId == tree.ParentID).Count();
+            if(x!=1)
+            {
+                return View(tree);
+            }
+
             if (ModelState.IsValid)
             {
+                
                 db.Trees.Add(tree);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
             return View(tree);
+        }
+
+        public ActionResult AddChild(int id)
+        {
+            Tree tree = db.Trees.Find(id);
+            if(tree==null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            ViewBag.Rodzic = tree.Name;
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult AddChild(int id,Tree tree)
+        {
+            tree.ParentID = id;
+
+            if(ModelState.IsValid)
+            {
+                db.Trees.Add(tree);
+                db.SaveChanges();
+                return RedirectToAction("Index", "Tree");
+            }
+
+            return View();
         }
 
         // GET: Tree/Edit/5
@@ -81,8 +143,6 @@ namespace ZadanieRekrutacyjne.Controllers
                 return HttpNotFound();
             }
 
-            var node = db.Trees.Where(a=>a.TreeId!=id);
-            ViewBag.Nodes = node;
             return View(tree);
         }
 
@@ -105,6 +165,55 @@ namespace ZadanieRekrutacyjne.Controllers
             return View(tree);
         }
 
+        public ActionResult Move(int? id)
+        {
+            if(id!=1)
+            { 
+                if (id == null)
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                }
+                Tree tree = db.Trees.Find(id);
+                if (tree == null)
+                {
+                    return HttpNotFound();
+                }
+
+                var node = db.Trees.Select(x => new SelectListItem
+                {
+                    Value = x.TreeId.ToString(),
+                    Text = x.Name
+                });
+
+                Tree parent = db.Trees.Find(tree.ParentID);
+
+                ViewBag.CurrentParent = parent.Name;
+                ViewBag.ParentID = new SelectList(node, "Value", "Text");
+                return View(tree);
+            }
+            return RedirectToAction("Index", "Tree");
+        }
+
+        // POST: Tree/Edit/5
+        // Aby zapewnić ochronę przed atakami polegającymi na przesyłaniu dodatkowych danych, włącz określone właściwości, z którymi chcesz utworzyć powiązania.
+        // Aby uzyskać więcej szczegółów, zobacz https://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Move([Bind(Include = "TreeId,Name,ParentID")] Tree tree)
+        {
+            if (tree.TreeId == tree.ParentID)
+                return View(tree);
+
+            if (ModelState.IsValid)
+            {
+                db.Entry(tree).State = EntityState.Modified;
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            return View(tree);
+        }
+
+
         // GET: Tree/Delete/5
         public ActionResult Delete(int? id)
         {
@@ -126,6 +235,12 @@ namespace ZadanieRekrutacyjne.Controllers
         public ActionResult DeleteConfirmed(int id)
         {
             //usuwanie tylko wybranego węzła, dzieci tego węzła zostają przeniesione o poziom w górę
+
+            if(id==1)
+            {
+                //jeżeli id=1 to wracamy do widoku index, poniewaź nie można usunąć korzenia
+                return RedirectToAction("Index", "Tree");
+            }
 
             Tree tree = db.Trees.Find(id);
 
@@ -177,6 +292,26 @@ namespace ZadanieRekrutacyjne.Controllers
         public ActionResult DeleteAllConfirmed(int id)
         {
             //funkcja służąca do usuwania węzła razem z dziećmi
+
+            if(id==1)
+            {
+                var nodes = db.Trees.Where(n => n.TreeId != 1);
+                List<Tree> toDeleteAll = new List<Tree>();
+
+                foreach(var treeNode in nodes)
+                {
+                    Tree t = db.Trees.Find(treeNode.TreeId);
+                    toDeleteAll.Add(t);
+                }
+
+                foreach(Tree t in toDeleteAll)
+                {
+                    db.Trees.Remove(t);
+                }
+
+                db.SaveChanges();
+                return RedirectToAction("Index", "Tree");
+            }
 
             bool contains = true;
             Tree tree = db.Trees.Find(id);

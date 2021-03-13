@@ -14,11 +14,10 @@ namespace ZadanieRekrutacyjne.Models
         [Display(Name ="Nazwa")]
         public string Name { get; set; }
 
-        [Required]
+        [Required(ErrorMessage ="Błąd")]
         [Display(Name="ID Rodzica")]
         public int ParentID { get; set; }
 
-        
 
     }
 }
