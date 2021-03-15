@@ -20,13 +20,20 @@ namespace ZadanieRekrutacyjne.Controllers
             return View(db.Trees.ToList());
         }
 
-        public ActionResult Treeview(int? parentID, int? sortType, int? sortId)
+        public ActionResult Treeview(int? parentID, int? sortType)
         {
+            //funkcja, służaca do wyświetlania drzewa
+            //funkcja ta jako parametry przyjmuje ID rodzica oraz wartość służącą do zidentyfikowania rodzaju sortowania
+
             if(parentID == null)
             {
+                //jeżeli nasz parametr parentID jest pusty przypisujemy mu wartość 0
+                //wartość 0 jest rodzicem dla korzenia drzewa
                 parentID = 0;
             }
 
+            //wartość zmiennej parentID przekazujemy do widoku, a następnie generujemy listę obiektów klasy Tree z bazy danych(posortowanych w odpowiedni sposób) 
+            //na końcu zwracamy widok częściowy
             ViewBag.parentID = parentID;
             var lista = db.Trees.ToList();
 
@@ -46,80 +53,36 @@ namespace ZadanieRekrutacyjne.Controllers
             return PartialView(lista);
         }
 
-        // GET: Tree/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Tree tree = db.Trees.Find(id);
-            if (tree == null)
-            {
-                return HttpNotFound();
-            }
-            return View(tree);
-        }
+        
 
-        // GET: Tree/Create
-        public ActionResult Create()
-        {
-            //var node = db.Trees;
+        
 
-
-            var node = db.Trees.Select(x => new SelectListItem
-            {
-                Value = x.TreeId.ToString(),
-                Text = x.Name
-            });
-
-            ViewBag.ParentID = new SelectList(node,"Value","Text");
-
-            return View();
-        }
-
-        // POST: Tree/Create
-        // Aby zapewnić ochronę przed atakami polegającymi na przesyłaniu dodatkowych danych, włącz określone właściwości, z którymi chcesz utworzyć powiązania.
-        // Aby uzyskać więcej szczegółów, zobacz https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "TreeId,Name,ParentID")] Tree tree)
-        {
-
-            int x = db.Trees.Where(n => n.TreeId == tree.ParentID).Count();
-            if(x!=1)
-            {
-                return View(tree);
-            }
-
-            if (ModelState.IsValid)
-            {
-                
-                db.Trees.Add(tree);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-
-            return View(tree);
-        }
-
+        [Authorize(Roles = "Admin")]
         public ActionResult AddChild(int id)
         {
+            //funkcja, która służy do dodania dziecka do wybranego elementu drzewa
+
+            //sprawdzamy czy w bazie widnieje element o danym ID
+            //jeżeli nie istnieje zwracamy BadRequest
             Tree tree = db.Trees.Find(id);
             if(tree==null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
+            //w przeciwnym wypadku do modelu przesyłamy nazwę węzła do którego będziemy dodawać dziecko
             ViewBag.Rodzic = tree.Name;
             return View();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public ActionResult AddChild(int id,Tree tree)
         {
+            //do modelu uzyskanego z formularza dodajemy id rodzica - jest ono zawarte w adresie
             tree.ParentID = id;
 
+            //sprawdzamy czy model jest prawidłowy, jeżeli tak dodajemy go do bazy i wracamy do strony Tree/Index
             if(ModelState.IsValid)
             {
                 db.Trees.Add(tree);
@@ -127,12 +90,16 @@ namespace ZadanieRekrutacyjne.Controllers
                 return RedirectToAction("Index", "Tree");
             }
 
+            //w przeciwnym razie zwracamy widok formularza do ponownego uzupełnienia
             return View();
         }
 
         // GET: Tree/Edit/5
+        [Authorize(Roles = "Admin")]
         public ActionResult Edit(int? id)
         {
+            //funckja służaca do zmiany nazwy 
+
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -149,26 +116,38 @@ namespace ZadanieRekrutacyjne.Controllers
         // POST: Tree/Edit/5
         // Aby zapewnić ochronę przed atakami polegającymi na przesyłaniu dodatkowych danych, włącz określone właściwości, z którymi chcesz utworzyć powiązania.
         // Aby uzyskać więcej szczegółów, zobacz https://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "TreeId,Name,ParentID")] Tree tree)
         {
+            //najpierw sprawdzamy czy ID elementu nie jest takie samo jak ID rodzica
+            //taka sytuacja nie może mieć miejsca, więc w przypadku jej wystąpinia wracamy do widoku formularza
             if (tree.TreeId == tree.ParentID)
                 return View(tree);
 
+            //jeżeli model jest w porządku zapisujemy zmiany i wracamy do strony Tree/Index
             if (ModelState.IsValid)
             {
                 db.Entry(tree).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
+
+            //w przeciwnym razie wracamy do widoku formularza
             return View(tree);
         }
 
+        [Authorize(Roles = "Admin")]
         public ActionResult Move(int? id)
         {
+            //funkcja służaca do przenoszenia całej gałęzi
+
+            //najpierw sprawdzamy czy użytkownik nie próbuje przenieść korzenia drzewa
+            //takie działanie jest niemożliwe do wykonania, więc w przypadku jego wystąpienia wracamy do strony Tree/Index
             if(id!=1)
-            { 
+            {
+                //sprawdzamy czy id jest puste oraz czy istnieje w bazie element o danym id
                 if (id == null)
                 {
                     return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -179,6 +158,8 @@ namespace ZadanieRekrutacyjne.Controllers
                     return HttpNotFound();
                 }
 
+
+                //następnie przekazujemy do modelu listę wszystkich dostępnych gałęzi drzewa oraz nazwę obecnego rodzica
                 var node = db.Trees.Select(x => new SelectListItem
                 {
                     Value = x.TreeId.ToString(),
@@ -197,13 +178,17 @@ namespace ZadanieRekrutacyjne.Controllers
         // POST: Tree/Edit/5
         // Aby zapewnić ochronę przed atakami polegającymi na przesyłaniu dodatkowych danych, włącz określone właściwości, z którymi chcesz utworzyć powiązania.
         // Aby uzyskać więcej szczegółów, zobacz https://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Move([Bind(Include = "TreeId,Name,ParentID")] Tree tree)
         {
+            //najpierw sprawdzamy czy ID elementu nie jest takie samo jak ID rodzica
+            //taka sytuacja nie może mieć miejsca, więc w przypadku jej wystąpinia wracamy do widoku formularza
             if (tree.TreeId == tree.ParentID)
                 return View(tree);
 
+            //jeżeli model jest prawidłowy zapisujemy zmiany w bazie i wracamy do Tree/Index
             if (ModelState.IsValid)
             {
                 db.Entry(tree).State = EntityState.Modified;
@@ -215,21 +200,38 @@ namespace ZadanieRekrutacyjne.Controllers
 
 
         // GET: Tree/Delete/5
+        [Authorize(Roles = "Admin")]
         public ActionResult Delete(int? id)
         {
+            //funkcja służaca do usunięcia elementu i przeniesienia jego dzieci o poziom wyżej w hierarchii
+            //sprawdzamy czy id jest puste
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+
+            //korzenia drzewa nie możemy usunąć, więc w przypadku takiego requesta wracamy do widoku Tree/Index
+            if(id==1)
+            {
+                return RedirectToAction("Index", "Tree");
+            }
+
+            //sprawdzamy czy w bazie występuje element o danym ID
             Tree tree = db.Trees.Find(id);
             if (tree == null)
             {
                 return HttpNotFound();
             }
+
+            //do widoku przekazujemy nazwę rodzica
+            Tree parent = db.Trees.Find(tree.ParentID);
+            ViewBag.Rodzic = parent.Name;
+
             return View(tree);
         }
 
         // POST: Tree/Delete/5
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
@@ -242,8 +244,10 @@ namespace ZadanieRekrutacyjne.Controllers
                 return RedirectToAction("Index", "Tree");
             }
 
+            //z bazy pobieramy element o danym id i tworzymy pustę liste obiektów klasy Tree
+            //w tej liście będziemy zapisywać dzieci tego elementu
+            //zrobimy to ponieważ musimy im zmienić id rodzica na id rodzica usuwanego elementu
             Tree tree = db.Trees.Find(id);
-
             List<Tree> toModify = new List<Tree>();
 
             var nodes = db.Trees.Where(n => n.ParentID == id);
@@ -260,21 +264,35 @@ namespace ZadanieRekrutacyjne.Controllers
                 }
             }
 
+            
             int parentNodeID = tree.ParentID;
 
+            //w każdym obiekcie z listy toModify zmieniamy wartość pola ParentID
             foreach(Tree t in toModify)
             {
                 t.ParentID = parentNodeID;
                 db.Entry(t).State = EntityState.Modified;
             }
 
+            //usuwamy element i zapisujemy zmiany
             db.Trees.Remove(tree);
             db.SaveChanges();
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "Admin")]
         public ActionResult DeleteAll(int? id)
         {
+            //funkcja, służąca do usuwania elementu razem z dziećmi
+            
+            //ostrzeżenie o wyczyszczeniu całego drzewa 
+            if(id==1)
+            {
+                ViewBag.Warning = "Zamierzasz wyczyścić całe drzewo";
+                ViewBag.Rodzic = "Ten element jest korzeniem drzewa";
+            }
+
+            //sprawdzenie czy id jest puste i czy baza zawiera element o danym id
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -284,26 +302,38 @@ namespace ZadanieRekrutacyjne.Controllers
             {
                 return HttpNotFound();
             }
+
+            //do widoku przekazujemy również nazwę rodzica
+            if (id != 1)
+            {
+                Tree parent = db.Trees.Find(tree.ParentID);
+                ViewBag.Rodzic = parent.Name;
+            }
             return View(tree);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("DeleteAll")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteAllConfirmed(int id)
         {
             //funkcja służąca do usuwania węzła razem z dziećmi
 
+            //jeżeli id==1 (jest to id korzenia) to czyścimy całe drzewo zostawiając jedynie korzeń
             if(id==1)
             {
+                //pobieramy wszystkie elementy z bazy z wyłączeniem korzenia(czyli elementu o id=1)
                 var nodes = db.Trees.Where(n => n.TreeId != 1);
                 List<Tree> toDeleteAll = new List<Tree>();
 
+                //za pomocą pętli foreach dodajemy te elementy do wcześniej utworzonej listy
                 foreach(var treeNode in nodes)
                 {
                     Tree t = db.Trees.Find(treeNode.TreeId);
                     toDeleteAll.Add(t);
                 }
 
+                //usuwamy element z listy, zapisujemy zmiany i wracamy do Tree/Index
                 foreach(Tree t in toDeleteAll)
                 {
                     db.Trees.Remove(t);

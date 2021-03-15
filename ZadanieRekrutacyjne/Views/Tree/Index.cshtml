@@ -6,11 +6,7 @@
 
 
 
-<h2>Index</h2>
-
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
+<h2>Widok struktury drzewa</h2>
 
 
 @using (Ajax.BeginForm(new AjaxOptions
@@ -39,6 +35,24 @@
     </ul>
 </div>
 
+<hr />
+<div >
+    @if(User.IsInRole("Admin"))
+    {
+        <h3 class="text-center">Legenda</h3>
+        <p class="text-center">
+            <i class="fa fa-plus-circle fa-lg" style="color:green;"></i> - dodaj dziecko dla wybranego wierzchołka <br />
+            <i class="fa fa-edit fa-lg"></i> - edytuj nazwę wybranego elementu <br />
+            <i class="fa fa-arrow-up fa-lg"></i> - przenieś wierzchołek razem z dziećmi do innej gałęzi <br />
+            <i class="fa fa-minus-circle fa-lg" style="color:red;"></i> - usuń ten wierzchłek a dzieci przesuń w górę hierarchii<br />
+            <i class="fa fa-trash fa-lg"></i> - usuń ten wierzchłokem razem z wszystkimi dziećmi
+        </p>
+    }
+    else
+    {
+    @Html.ActionLink("Zaloguj się ","Login","Account") <p style="display:inline-block">aby uzyskać dostęp do zarządzania drzewem</p>
+    }
+</div>
 
 @section Scripts{
     <script>
@@ -46,8 +60,9 @@
             $(".treeview li>ul").css('display', 'none');
             $(".collapsible").click(function (e) {
                 e.preventDefault();
-                $(this).toggleClass("collapse expand");
-                $(this).closest('li').children('ul').slideToggle();
+                var clicked = $(this).attr('id');
+                $("#"+clicked+" i").closest("i").toggleClass("fa-angle-right fa-angle-down");
+                $("#" + clicked + " i").closest('li').children('ul').slideToggle();
             });
         });
     </script>

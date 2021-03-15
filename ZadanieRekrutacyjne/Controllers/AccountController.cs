@@ -136,7 +136,8 @@ namespace ZadanieRekrutacyjne.Controllers
 
         //
         // GET: /Account/Register
-        [AllowAnonymous]
+        
+        [Authorize]
         public ActionResult Register()
         {
             return View();
@@ -144,8 +145,9 @@ namespace ZadanieRekrutacyjne.Controllers
 
         //
         // POST: /Account/Register
+        [Authorize]
         [HttpPost]
-        [AllowAnonymous]
+        
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
@@ -155,7 +157,8 @@ namespace ZadanieRekrutacyjne.Controllers
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
+                    UserManager.AddToRole(user.Id, "Admin");
+                    //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
                     
                     // Aby uzyskać więcej informacji o sposobie włączania potwierdzania konta i resetowaniu hasła, odwiedź stronę https://go.microsoft.com/fwlink/?LinkID=320771
                     // Wyślij wiadomość e-mail z tym łączem
@@ -167,6 +170,8 @@ namespace ZadanieRekrutacyjne.Controllers
                 }
                 AddErrors(result);
             }
+
+
 
             // Dotarcie do tego miejsca wskazuje, że wystąpił błąd, wyświetl ponownie formularz
             return View(model);

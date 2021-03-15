@@ -1,5 +1,7 @@
 namespace ZadanieRekrutacyjne.Migrations
 {
+    using Microsoft.AspNet.Identity;
+    using Microsoft.AspNet.Identity.EntityFramework;
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Migrations;
@@ -18,6 +20,16 @@ namespace ZadanieRekrutacyjne.Migrations
 
             //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data.
+
+            var RoleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
+            string rola = "Admin";
+            IdentityResult roleResult;
+
+            if (!RoleManager.RoleExists(rola))
+            {
+                roleResult = RoleManager.Create(new IdentityRole(rola));
+            }
+
         }
     }
 }

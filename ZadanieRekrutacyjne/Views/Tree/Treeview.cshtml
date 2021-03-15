@@ -9,16 +9,37 @@
         } 
         @if (ilosc > 0)
 	        {
-		        <span class="collapse collapsible ">&nbsp;</span>
+		        <span class=" collapsible " id ="@item.TreeId"><i class="fa fa-angle-right fa-lg" id="@item.TreeId" style="color:black;"></i>&nbsp;</span>
 	        }
             else
 	        {
                 <span style="width:15px; display:inline-block">&nbsp;</span>
 	        }
             <span>
-                @item.Name
+                @item.Name 
+                @if(User.IsInRole("Admin"))
+                { 
+                <a href="/Tree/AddChild/@item.TreeId">
+                <i class="fa fa-plus-circle fa-lg" style="color:green;"></i>
+                </a>
+                <a href="/Tree/Edit/@item.TreeId">
+                    <i class="fa fa-edit fa-lg"></i>
+                </a>
+                if(item.TreeId!=1)
+                { 
+                <a href="/Tree/Move/@item.TreeId">
+                    <i class="fa fa-arrow-up fa-lg"></i>
+                </a>
+                <a href="/Tree/Delete/@item.TreeId">
+                    <i class="fa fa-minus-circle fa-lg" style="color:red;"></i>
+                </a>
+                }
+                <a href="/Tree/DeleteAll/@item.TreeId">
+                    <i class="fa fa-trash fa-lg"></i>
+                </a>
+                }
             </span>
-        @if(ilosc>0)
+        @if (ilosc>0)
         {
             <ul>
             @Html.Action("Treeview", "Tree", new {parentID = item.TreeId})

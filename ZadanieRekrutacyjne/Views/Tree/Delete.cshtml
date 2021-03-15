@@ -1,12 +1,12 @@
 ﻿@model ZadanieRekrutacyjne.Models.Tree
 
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Usuń element";
 }
 
-<h2>Delete</h2>
+<h2>Usuń wierzchołek, a jego dzieci przesuń wyżej w hierarchii</h2>
 
-<h3>Are you sure you want to delete this?</h3>
+<h3>Czy na pewno chcesz usunąć ten element?</h3>
 <div>
     <h4>Tree</h4>
     <hr />
@@ -20,21 +20,26 @@
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.ParentID)
+            @Html.DisplayName("Nazwa rodzica:")
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.ParentID)
+            @ViewBag.Rodzic
         </dd>
 
     </dl>
 
-    @using (Html.BeginForm()) {
+    @using (Html.BeginForm())
+    {
         @Html.AntiForgeryToken()
 
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
+        <div class="form-group">
+            <input type="submit" value="Usuń" class="btn btn-default" /> 
+
+        </div>
+
+        <div>
+            @Html.ActionLink("Powrót", "Index")
         </div>
     }
 </div>
